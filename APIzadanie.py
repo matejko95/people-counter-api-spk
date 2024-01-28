@@ -44,7 +44,24 @@ class HelloWorld(Resource):
     def get(self):
         return {'hello': 'world'}
 
+class PeopleCounter2(Resource):
+    def post(self):
+        try:
+            data = request.get_data()
+            nparr = np.frombuffer(data, np.uint8)
+            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
+            if image is None:
+                return {'error': 'Nie udało się wczytać obrazu'}, 500
+
+            boxes, weights = hog.detectMultiScale(image, winStride=(8, 8))
+
+            return {'count': len(boxes)}
+        except Exception as e:
+            return {'error': f'Wystąpił błąd: {str(e)}'}, 500
+
+api.add_resource(PeopleCounter2, '/people-counter')
+#w terminalu curl -X POST -H "Content-Type: image/jpeg" --data-binary "@/Users/izamatejko/Desktop/dworzec.jpg" http://127.0.0.1:5001/people-counter
 api.add_resource(CounterLink, '/B')
 #http://127.0.0.1:5001/B?image_url=https://www.wrotapodlasia.pl/resource/image/2/300/156565/1371536/828x0.jpg
 api.add_resource(PeopleCounter, '/A')
